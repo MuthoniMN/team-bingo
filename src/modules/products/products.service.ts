@@ -19,6 +19,7 @@ import { CreateProductRequestDto } from './dto/create-product.dto';
 import { UpdateProductDTO } from './dto/update-product.dto';
 import { ProductVariant } from './entities/product-variant.entity';
 import { Product, ProductSizeType, StockStatusType } from './entities/product.entity';
+import { ProductCategory } from '../product-category/entities/product-category.entity';
 
 interface SearchCriteria {
   name?: string;
@@ -34,7 +35,8 @@ export class ProductsService {
     @InjectRepository(Product) private productRepository: Repository<Product>,
     @InjectRepository(Organisation) private organisationRepository: Repository<Organisation>,
     @InjectRepository(Comment) private commentRepository: Repository<Comment>,
-    @InjectRepository(User) private userRepository: Repository<User>
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(ProductCategory) private categoryRepository: Repository<ProductCategory>
   ) {}
 
   async createProduct(id: string, dto: CreateProductRequestDto) {
@@ -55,7 +57,19 @@ export class ProductsService {
       size: dto.size as ProductSizeType,
     };
 
-    const newProduct: Product = this.productRepository.create(payload);
+    let category = this.categoryRepository.find({
+      where: {
+        name: payload.category
+      }
+    }),
+
+    if(!category) {
+      category = this.categoryRepository.create({
+        name: payload.category
+      })
+    }
+
+    const newProduct: Product = this.productRepository.create({ ...payload, category });
     newProduct.org = org;
     const statusCal = await this.calculateProductStatus(dto.quantity);
     newProduct.stock_status = statusCal;

@@ -4,6 +4,7 @@ import { Comment } from '../../../modules/comments/entities/comments.entity';
 import { Organisation } from '../../../modules/organisations/entities/organisations.entity';
 import { Cart } from '../../dashboard/entities/cart.entity';
 import { OrderItem } from '../../dashboard/entities/order-items.entity';
+import { ProductCategory } from 'src/modules/product-category/entities/product-category.entity';
 
 export enum StockStatusType {
   IN_STOCK = 'in stock',
@@ -24,9 +25,6 @@ export class Product extends AbstractBaseEntity {
 
   @Column({ type: 'text', nullable: true })
   description: string;
-
-  @Column({ type: 'text', nullable: true })
-  category: string;
 
   @Column({ type: 'text', nullable: true })
   image: string;
@@ -53,6 +51,9 @@ export class Product extends AbstractBaseEntity {
     default: StockStatusType.OUT_STOCK,
   })
   stock_status: StockStatusType;
+
+  @ManyToOne(() => ProductCategory, category => category.products)
+  category: ProductCategory;
 
   @ManyToOne(() => Organisation, org => org.products)
   org: Organisation;
